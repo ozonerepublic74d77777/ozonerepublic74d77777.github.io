@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Ozonerepublic — cinematic video editing, short-form cuts, and visual storytelling." />
+  <meta name="theme-color" content="#101010" />
+  <title>Ozonerepublic — Video Editor</title>
+  <style>
+    :root {
+      --ink: #f4f0e7;
+      --muted: #a6a39c;
+      --bg: #101010;
+      --panel: #181817;
+      --line: rgba(244, 240, 231, .16);
+      --acid: #c6f36b;
+      --orange: #ff704a;
+      --max: 1160px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+    a { color: inherit; text-decoration: none; }
+    .wrap { width: min(calc(100% - 40px), var(--max)); margin: 0 auto; }
+    .nav {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 26px 0; border-bottom: 1px solid var(--line);
+    }
+    .brand { font-size: .82rem; letter-spacing: .14em; text-transform: uppercase; font-weight: 800; }
+    .brand span { color: var(--acid); }
+    .nav-links { display: flex; gap: 26px; color: var(--muted); font-size: .88rem; }
+    .nav-links a:hover { color: var(--ink); }
+    .hero { padding: 110px 0 92px; position: relative; overflow: hidden; }
+    .hero::after {
+      content: ""; position: absolute; width: 360px; height: 360px; right: -120px; top: 26px;
+      border: 1px solid rgba(198,243,107,.25); border-radius: 50%;
+      box-shadow: 0 0 0 44px rgba(198,243,107,.03), 0 0 0 88px rgba(198,243,107,.02);
+      pointer-events: none;
+    }
+    .eyebrow { color: var(--acid); text-transform: uppercase; letter-spacing: .18em; font-size: .72rem; font-weight: 800; }
+    h1 { max-width: 900px; font-size: clamp(3.7rem, 10vw, 8.8rem); line-height: .9; letter-spacing: -.08em; margin: 22px 0 28px; font-weight: 850; }
+    h1 em { color: var(--orange); font-style: normal; }
+    .hero-copy { display: flex; justify-content: space-between; gap: 40px; align-items: end; }
+    .hero-copy p { max-width: 430px; color: var(--muted); font-size: 1.06rem; margin: 0; }
+    .button { display: inline-flex; align-items: center; gap: 10px; padding: 13px 18px; border: 1px solid var(--acid); color: var(--acid); border-radius: 999px; font-size: .85rem; font-weight: 750; white-space: nowrap; transition: .2s ease; }
+    .button:hover { background: var(--acid); color: var(--bg); transform: translateY(-2px); }
+    .section { padding: 80px 0; border-top: 1px solid var(--line); }
+    .section-head { display: flex; justify-content: space-between; gap: 24px; align-items: baseline; margin-bottom: 30px; }
+    h2 { font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1; letter-spacing: -.06em; margin: 0; }
+    .section-head p { margin: 0; max-width: 350px; color: var(--muted); font-size: .9rem; }
+    .reel { display: grid; grid-template-columns: 1.6fr 1fr; gap: 14px; }
+    .reel-card { min-height: 390px; background: linear-gradient(140deg, #252523, #131313); border: 1px solid var(--line); padding: 24px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
+    .reel-card::before { content: "REEL"; position: absolute; font-size: 11rem; line-height: .8; font-weight: 900; letter-spacing: -.12em; color: rgba(244,240,231,.045); right: -18px; bottom: 44px; transform: rotate(-8deg); }
+    .reel-card.accent { background: var(--orange); color: #15110f; }
+    .reel-card.accent::before { color: rgba(16,16,16,.1); }
+    .play { width: 58px; height: 58px; border: 1px solid currentColor; border-radius: 50%; display: grid; place-items: center; font-size: 1.1rem; }
+    .card-meta { position: relative; z-index: 1; }
+    .card-meta small { display: block; text-transform: uppercase; letter-spacing: .13em; font-size: .68rem; opacity: .7; margin-bottom: 8px; }
+    .card-meta strong { display: block; font-size: 1.55rem; letter-spacing: -.04em; }
+    .work-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .work { aspect-ratio: 1 / 1.12; padding: 20px; background: var(--panel); border: 1px solid var(--line); display: flex; align-items: end; position: relative; overflow: hidden; }
+    .work:nth-child(1) { background: linear-gradient(145deg, #453d32, #1a1917 60%); }
+    .work:nth-child(2) { background: linear-gradient(145deg, #253542, #151617 60%); }
+    .work:nth-child(3) { background: linear-gradient(145deg, #463343, #171418 60%); }
+    .work::after { content: ""; position: absolute; inset: 12px; border: 1px solid rgba(255,255,255,.12); transform: skewY(-6deg); }
+    .work div { position: relative; z-index: 1; }
+    .work b { font-size: 1.3rem; letter-spacing: -.04em; display: block; }
+    .work span { color: var(--muted); font-size: .78rem; }
+    .services { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); }
+    .service { padding: 24px 22px 6px 0; border-right: 1px solid var(--line); margin-right: 22px; }
+    .service:last-child { border: 0; margin: 0; }
+    .service-number { color: var(--orange); font-size: .75rem; font-weight: 800; letter-spacing: .12em; }
+    .service h3 { font-size: 1.3rem; margin: 22px 0 10px; letter-spacing: -.04em; }
+    .service p { color: var(--muted); font-size: .9rem; margin: 0; }
+    .contact { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: end; }
+    .contact h2 { max-width: 560px; }
+    .contact p { color: var(--muted); max-width: 360px; }
+    .contact-link { color: var(--acid); font-size: clamp(1.3rem, 3vw, 2.3rem); letter-spacing: -.06em; word-break: break-word; }
+    footer { border-top: 1px solid var(--line); padding: 24px 0 40px; color: var(--muted); font-size: .78rem; display: flex; justify-content: space-between; gap: 20px; }
+    @media (max-width: 760px) {
+      .wrap { width: min(calc(100% - 28px), var(--max)); }
+      .nav-links { display: none; }
+      .hero { padding: 82px 0 68px; }
+      .hero-copy, .section-head, .contact { display: block; }
+      .hero-copy p { margin-bottom: 24px; }
+      .reel, .work-grid, .services { grid-template-columns: 1fr; }
+      .reel-card { min-height: 280px; }
+      .work { aspect-ratio: 1.2 / 1; }
+      .service { border-right: 0; border-bottom: 1px solid var(--line); margin: 0; padding: 24px 0; }
+      .contact-link { display: inline-block; margin-top: 22px; }
+      footer { display: block; }
+      footer span { display: block; margin-top: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="wrap nav">
+    <a class="brand" href="#top">Ozone<span>republic</span></a>
+    <nav class="nav-links" aria-label="Main navigation">
+      <a href="#work">Work</a><a href="#services">Services</a><a href="#contact">Contact</a>
+    </nav>
+  </header>
+  <main id="top">
+    <section class="wrap hero">
+      <div class="eyebrow">Independent video editor / available for select projects</div>
+      <h1>Make the<br /><em>moment</em> move.</h1>
+      <div class="hero-copy">
+        <p>Ozonerepublic shapes raw footage into sharp, rhythmic stories for brands, creators, and people with something worth saying.</p>
+        <a class="button" href="#contact">Start a project <span>↗</span></a>
+      </div>
+    </section>
+    <section class="wrap section" id="work">
+      <div class="section-head"><h2>Selected work</h2><p>Replace these cards with your real showreel, client projects, and before/after edits.</p></div>
+      <div class="reel">
+        <a class="reel-card" href="#contact" aria-label="Add your main showreel link here">
+          <div class="play">▶</div><div class="card-meta"><small>Featured / Showreel</small><strong>Your main reel goes here ↗</strong></div>
+        </a>
+        <a class="reel-card accent" href="#contact" aria-label="Add your short form work link here">
+          <div class="play">▶</div><div class="card-meta"><small>Short form / Social</small><strong>Fast cuts. Clear ideas.</strong></div>
+        </a>
+      </div>
+      <div class="work-grid" style="margin-top:14px;">
+        <a class="work" href="#contact"><div><b>Commercial</b><span>Brand story / 00:45</span></div></a>
+        <a class="work" href="#contact"><div><b>Creator cuts</b><span>Long-form to short-form</span></div></a>
+        <a class="work" href="#contact"><div><b>Before / after</b><span>Raw footage → final cut</span></div></a>
+      </div>
+    </section>
+    <section class="wrap section" id="services">
+      <div class="section-head"><h2>What I do</h2><p>Editing with intention: every cut should earn its place.</p></div>
+      <div class="services">
+        <article class="service"><div class="service-number">01 / STORY</div><h3>Long-form editing</h3><p>Structure, pacing, clean dialogue, and a finished narrative that holds attention.</p></article>
+        <article class="service"><div class="service-number">02 / RHYTHM</div><h3>Short-form content</h3><p>Platform-ready clips with strong hooks, kinetic captions, and purposeful momentum.</p></article>
+        <article class="service"><div class="service-number">03 / POLISH</div><h3>Finishing and motion</h3><p>Color, sound cleanup, titles, subtitles, and motion details that make the cut feel complete.</p></article>
+      </div>
+    </section>
+    <section class="wrap section contact" id="contact">
+      <div><div class="eyebrow">Have footage?</div><h2>Let’s turn it into something people remember.</h2><p>Tell me what you are making, what you have, and where it needs to go.</p></div>
+      <div><a class="contact-link" href="mailto:hello@ozonerepublic.com">hello@ozonerepublic.com ↗</a><p>Replace this email address with your preferred contact.</p></div>
+    </section>
+  </main>
+  <footer class="wrap"><strong>Ozonerepublic</strong><span>Video editing / visual storytelling / 2026</span></footer>
+</body>
+</html>
