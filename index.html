@@ -65,6 +65,14 @@
     .card-meta strong { display: block; font-size: 1.55rem; letter-spacing: -.04em; }
     .work-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
     .work { aspect-ratio: 1 / 1.12; padding: 20px; background: var(--panel); border: 1px solid var(--line); display: flex; align-items: end; position: relative; overflow: hidden; }
+    .shorts-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .short-card { display: block; background: var(--panel); border: 1px solid var(--line); overflow: hidden; transition: .2s ease; }
+    .short-card:hover { border-color: var(--acid); transform: translateY(-3px); }
+    .short-thumb { aspect-ratio: 9 / 16; background: #20201e center / cover no-repeat; position: relative; }
+    .short-thumb::after { content: "▶"; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 42px; height: 42px; display: grid; place-items: center; border: 1px solid rgba(244,240,231,.8); border-radius: 50%; color: var(--ink); background: rgba(16,16,16,.42); font-size: .75rem; }
+    .short-label { display: flex; justify-content: space-between; gap: 10px; padding: 12px; font-size: .75rem; color: var(--muted); }
+    .short-label strong { color: var(--ink); font-size: .82rem; }
+    @media (max-width: 760px) { .shorts-grid { grid-template-columns: repeat(2, 1fr); } }
     .work:nth-child(1) { background: linear-gradient(145deg, #453d32, #1a1917 60%); }
     .work:nth-child(2) { background: linear-gradient(145deg, #253542, #151617 60%); }
     .work:nth-child(3) { background: linear-gradient(145deg, #463343, #171418 60%); }
@@ -126,9 +134,32 @@
         </a>
       </div>
       <div class="work-grid" style="margin-top:14px;">
-        <a class="work" href="#contact"><div><b>Talking heads</b><span>Clean dialogue / captions / pacing</span></div></a>
-        <a class="work" href="#contact"><div><b>Short films</b><span>Story, mood, and visual rhythm</span></div></a>
-        <a class="work" href="#contact"><div><b>YouTube videos</b><span>Structure, hooks, and retention</span></div></a>
+        <a class="work" href="https://youtube.com/shorts/tU0Q6qNtJrc" target="_blank" rel="noopener"><div><b>Talking heads</b><span>Clean dialogue / captions / pacing</span></div></a>
+        <a class="work" href="https://youtube.com/shorts/OlQj77CTUTs" target="_blank" rel="noopener"><div><b>Short films</b><span>Story, mood, and visual rhythm</span></div></a>
+        <a class="work" href="https://youtube.com/shorts/K2eUb8XqWU0" target="_blank" rel="noopener"><div><b>YouTube videos</b><span>Structure, hooks, and retention</span></div></a>
+      </div>
+      <div class="section-head" style="margin-top:64px;"><h2>Short-form cuts</h2><p>Selected vertical edits for creators, brands, and social platforms.</p></div>
+      <div class="shorts-grid">
+        <a class="short-card" href="https://youtube.com/shorts/tU0Q6qNtJrc" target="_blank" rel="noopener"><div class="short-thumb" style="background-image:url('https://i.ytimg.com/vi/tU0Q6qNtJrc/hqdefault.jpg')"></div><div class="short-label"><strong>Short 01</strong><span>Watch ↗</span></div></a>
+        <a class="short-card" href="https://youtube.com/shorts/OlQj77CTUTs" target="_blank" rel="noopener"><div class="short-thumb" style="background-image:url('https://i.ytimg.com/vi/OlQj77CTUTs/hqdefault.jpg')"></div><div class="short-label"><strong>Short 02</strong><span>Watch ↗</span></div></a>
+        <a class="short-card" href="https://youtube.com/shorts/K2eUb8XqWU0" target="_blank" rel="noopener"><div class="short-thumb" style="background-image:url('https://i.ytimg.com/vi/K2eUb8XqWU0/hqdefault.jpg')"></div><div class="short-label"><strong>Short 03</strong><span>Watch ↗</span></div></a>
+        <a class="short-card" href="https://youtube.com/shorts/QlzSF328y3c" target="_blank" rel="noopener"><div class="short-thumb" style="background-image:url('https://i.ytimg.com/vi/QlzSF328y3c/hqdefault.jpg')"></div><div class="short-label"><strong>Short 04</strong><span>Watch ↗</span></div></a>
+        <a class="short-card" href="https://youtube.com/shorts/c7QpSqZ4yfo" target="_blank" rel="noopener"><div class="short-thumb" style="background-image:url('https://i.ytimg.com/vi/c7QpSqZ4yfo/hqdefault.jpg')"></div><div class="short-label"><strong>Short 05</strong><span>Watch ↗</span></div></a>
+        <a class="short-card" href="https://youtube.com/shorts/5Ot55x1Ts58" target="_blank" rel="noopener"><div class="short-thumb" style="background-image:url('https://i.ytimg.com/vi/5Ot55x1Ts58/hqdefault.jpg')"></div><div class="short-label"><strong>Short 06</strong><span>Watch ↗</span></div></a>
+        <a class="short-card" href="https://youtube.com/shorts/WFnMLzcTf0M" target="_blank" rel="noopener"><div class="short-thumb" style="background-image:url('https://i.ytimg.com/vi/WFnMLzcTf0M/hqdefault.jpg')"></div><div class="short-label"><strong>Short 07</strong><span>Watch ↗</span></div></a>
+        <a class="short-card" href="https://youtube.com/shorts/QPaGBR-agG0" target="_blank" rel="noopener"><div class="short-thumb" style="background-image:url('https://i.ytimg.com/vi/QPaGBR-agG0/hqdefault.jpg')"></div><div class="short-label"><strong>Short 08</strong><span>Watch ↗</span></div></a>
+        <a class="short-card" href="https://youtube.com/shorts/fU8FmimK3NA" target="_blank" rel="noopener"><div class="short-thumb" style="background-image:url('https://i.ytimg.com/vi/fU8FmimK3NA/hqdefault.jpg')"></div><div class="short-label"><strong>Short 09</strong><span>Watch ↗</span></div></a>
+        <a class="short-card" href="https://youtube.com/shorts/dzvBwXEpEYA" target="_blank" rel="noopener"><div class="short-thumb" style="background-image:url('https://i.ytimg.com/vi/dzvBwXEpEYA/hqdefault.jpg')"></div><div class="short-label"><strong>Short 10</strong><span>Watch ↗</span></div></a>
+        <a class="short-card" href="https://youtube.com/shorts/MR9W0T8pyMk" target="_blank" rel="noopener"><div class="short-thumb" style="background-image:url('https://i.ytimg.com/vi/MR9W0T8pyMk/hqdefault.jpg')"></div><div class="short-label"><strong>Short 11</strong><span>Watch ↗</span></div></a>
+        <a class="short-card" href="https://youtube.com/shorts/HaOF-CXLy0s" target="_blank" rel="noopener"><div class="short-thumb" style="background-image:url('https://i.ytimg.com/vi/HaOF-CXLy0s/hqdefault.jpg')"></div><div class="short-label"><strong>Short 12</strong><span>Watch ↗</span></div></a>
+        <a class="short-card" href="https://youtube.com/shorts/VhTFOy4PqvY" target="_blank" rel="noopener"><div class="short-thumb" style="background-image:url('https://i.ytimg.com/vi/VhTFOy4PqvY/hqdefault.jpg')"></div><div class="short-label"><strong>Short 13</strong><span>Watch ↗</span></div></a>
+        <a class="short-card" href="https://youtube.com/shorts/ozlcbP9qVUU" target="_blank" rel="noopener"><div class="short-thumb" style="background-image:url('https://i.ytimg.com/vi/ozlcbP9qVUU/hqdefault.jpg')"></div><div class="short-label"><strong>Short 14</strong><span>Watch ↗</span></div></a>
+        <a class="short-card" href="https://youtube.com/shorts/xYJ7BudvssE" target="_blank" rel="noopener"><div class="short-thumb" style="background-image:url('https://i.ytimg.com/vi/xYJ7BudvssE/hqdefault.jpg')"></div><div class="short-label"><strong>Short 15</strong><span>Watch ↗</span></div></a>
+        <a class="short-card" href="https://youtube.com/shorts/HnqeFEszUyI" target="_blank" rel="noopener"><div class="short-thumb" style="background-image:url('https://i.ytimg.com/vi/HnqeFEszUyI/hqdefault.jpg')"></div><div class="short-label"><strong>Short 16</strong><span>Watch ↗</span></div></a>
+        <a class="short-card" href="https://youtube.com/shorts/GJlwUEyG5cI" target="_blank" rel="noopener"><div class="short-thumb" style="background-image:url('https://i.ytimg.com/vi/GJlwUEyG5cI/hqdefault.jpg')"></div><div class="short-label"><strong>Short 17</strong><span>Watch ↗</span></div></a>
+        <a class="short-card" href="https://youtube.com/shorts/TXbo1Ug8F8I" target="_blank" rel="noopener"><div class="short-thumb" style="background-image:url('https://i.ytimg.com/vi/TXbo1Ug8F8I/hqdefault.jpg')"></div><div class="short-label"><strong>Short 18</strong><span>Watch ↗</span></div></a>
+        <a class="short-card" href="https://youtube.com/shorts/TAL2qmFd5tc" target="_blank" rel="noopener"><div class="short-thumb" style="background-image:url('https://i.ytimg.com/vi/TAL2qmFd5tc/hqdefault.jpg')"></div><div class="short-label"><strong>Short 19</strong><span>Watch ↗</span></div></a>
+        <a class="short-card" href="https://youtube.com/shorts/sZCmo3ICCdk" target="_blank" rel="noopener"><div class="short-thumb" style="background-image:url('https://i.ytimg.com/vi/sZCmo3ICCdk/hqdefault.jpg')"></div><div class="short-label"><strong>Short 20</strong><span>Watch ↗</span></div></a>
       </div>
     </section>
     <section class="wrap section" id="services">
