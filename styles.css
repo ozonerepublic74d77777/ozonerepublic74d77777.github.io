@@ -807,6 +807,17 @@ h2 {
   padding: 16px;
   background: #363c3d;
   overscroll-behavior: contain;
+  touch-action: none;
+}
+
+.pdf-reader-viewport.is-pannable {
+  cursor: grab;
+  touch-action: none;
+}
+
+.pdf-reader-viewport.is-panning {
+  cursor: grabbing;
+  user-select: none;
 }
 
 .pdf-reader-status {

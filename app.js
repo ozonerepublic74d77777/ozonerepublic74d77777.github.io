@@ -31,6 +31,9 @@
   let pdfZoom = 1;
   let pdfCurrentUrl = '';
   let pdfResizeTimer = 0;
+  let pdfPanPointer = null;
+  const pdfTouchPointers = new Map();
+  let pdfPinch = null;
 
   const syncFullscreenButton = () => {
     const isFullscreen = Boolean(modal?.contains(document.fullscreenElement));
@@ -96,33 +99,50 @@
   const updatePdfControls = () => {
     const ready = Boolean(pdfDocument);
     pdfZoomOut.disabled = !ready || pdfZoom <= 0.75;
-    pdfZoomIn.disabled = !ready || pdfZoom >= 2.5;
+    pdfZoomIn.disabled = !ready || pdfZoom >= 4;
     pdfZoomLabel.textContent = `${Math.round(pdfZoom * 100)}%`;
+  };
+
+  const updatePdfPanState = () => {
+    pdfViewport?.classList.toggle('is-pannable', Boolean(pdfDocument && pdfZoom > 1.01));
   };
 
   const showPdfFallback = (url) => {
     if (!pdfFallback || !pdfPages) return;
     cancelPdfRenderTasks();
     pdfPages.replaceChildren();
+    pdfPages.style.removeProperty('transform');
+    pdfPages.style.removeProperty('transform-origin');
     pdfPages.hidden = true;
     pdfStatus.hidden = true;
     pdfFallback.src = url;
     pdfFallback.hidden = false;
   };
 
-  const renderPdfDocument = async () => {
+  const renderPdfDocument = async ({ anchorX, anchorY } = {}) => {
     if (!pdfDocument || !pdfReader.open || !pdfPages || !pdfViewport || !pdfStatus) return;
     const version = ++pdfRenderVersion;
     const doc = pdfDocument;
+    const hadRenderedPages = pdfPages.children.length > 0;
+    const focusX = Number.isFinite(anchorX) ? anchorX : pdfViewport.clientWidth / 2;
+    const focusY = Number.isFinite(anchorY) ? anchorY : pdfViewport.clientHeight / 2;
+    const previousX = hadRenderedPages
+      ? (pdfViewport.scrollLeft + focusX) / Math.max(1, pdfViewport.scrollWidth)
+      : 0;
+    const previousY = hadRenderedPages
+      ? (pdfViewport.scrollTop + focusY) / Math.max(1, pdfViewport.scrollHeight)
+      : 0;
     cancelPdfRenderTasks();
-    pdfPages.replaceChildren();
     pdfPages.hidden = false;
     pdfFallback.hidden = true;
     pdfFallback.removeAttribute('src');
-    pdfStatus.hidden = false;
+    pdfStatus.hidden = hadRenderedPages;
     pdfStatus.textContent = 'Rendering pages…';
     const availableWidth = Math.max(200, pdfViewport.clientWidth - 32);
-    const density = Math.min(window.devicePixelRatio || 1, 2);
+    const maxCanvasEdge = 8192;
+    const maxCanvasPixels = 16_000_000;
+    const deviceDensity = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+    const stagedPages = document.createElement('div');
 
     try {
       for (let pageNumber = 1; pageNumber <= doc.numPages; pageNumber += 1) {
@@ -130,26 +150,42 @@
         if (version !== pdfRenderVersion || doc !== pdfDocument || !pdfReader.open) return;
         const unscaled = page.getViewport({ scale: 1 });
         const viewport = page.getViewport({ scale: availableWidth / unscaled.width * pdfZoom });
+        const maxDimension = Math.max(viewport.width, viewport.height);
+        const pixelArea = Math.max(1, viewport.width * viewport.height);
+        const density = Math.min(
+          deviceDensity,
+          maxCanvasEdge / Math.max(1, maxDimension),
+          Math.sqrt(maxCanvasPixels / pixelArea)
+        );
         const canvas = document.createElement('canvas');
         canvas.className = 'pdf-page-canvas';
-        canvas.width = Math.ceil(viewport.width * density);
-        canvas.height = Math.ceil(viewport.height * density);
+        canvas.width = Math.max(1, Math.min(maxCanvasEdge, Math.ceil(viewport.width * density)));
+        canvas.height = Math.max(1, Math.min(maxCanvasEdge, Math.ceil(viewport.height * density)));
         canvas.style.width = `${Math.floor(viewport.width)}px`;
         canvas.style.height = `${Math.floor(viewport.height)}px`;
         canvas.setAttribute('role', 'img');
         canvas.setAttribute('aria-label', `Page ${pageNumber} of ${doc.numPages} from ${pdfTitle.textContent}`);
-        pdfPages.appendChild(canvas);
+        stagedPages.appendChild(canvas);
         const task = page.render({
           canvasContext: canvas.getContext('2d'),
           viewport,
-          transform: density === 1 ? null : [density, 0, 0, density, 0, 0]
+          transform: [canvas.width / viewport.width, 0, 0, canvas.height / viewport.height, 0, 0]
         });
         pdfRenderTasks.push(task);
         await task.promise;
         if (version !== pdfRenderVersion || doc !== pdfDocument || !pdfReader.open) return;
       }
+      pdfPages.replaceChildren(...stagedPages.childNodes);
+      pdfPages.style.removeProperty('transform');
+      pdfPages.style.removeProperty('transform-origin');
       pdfStatus.hidden = true;
       pdfRenderTasks = [];
+      updatePdfPanState();
+      requestAnimationFrame(() => {
+        if (version !== pdfRenderVersion || !pdfReader.open) return;
+        pdfViewport.scrollLeft = previousX * pdfViewport.scrollWidth - focusX;
+        pdfViewport.scrollTop = previousY * pdfViewport.scrollHeight - focusY;
+      });
     } catch (error) {
       if (error?.name === 'RenderingCancelledException' || version !== pdfRenderVersion) return;
       showPdfFallback(pdfCurrentUrl);
@@ -167,6 +203,8 @@
     pdfZoom = 1;
     pdfDocument = null;
     pdfPages.replaceChildren();
+    pdfPages.style.removeProperty('transform');
+    pdfPages.style.removeProperty('transform-origin');
     pdfPages.hidden = false;
     pdfFallback.hidden = true;
     pdfFallback.removeAttribute('src');
@@ -206,6 +244,11 @@
     pdfLoadingTask = null;
     pdfDocument = null;
     pdfPages?.replaceChildren();
+    pdfPages?.style.removeProperty('transform');
+    pdfPages?.style.removeProperty('transform-origin');
+    pdfTouchPointers.clear();
+    pdfPinch = null;
+    pdfPanPointer = null;
     if (pdfPages) pdfPages.hidden = false;
     pdfFallback?.removeAttribute('src');
     if (pdfFallback) pdfFallback.hidden = true;
@@ -222,15 +265,123 @@
 
   const changePdfZoom = (change) => {
     if (!pdfDocument) return;
-    const scrollProgress = pdfViewport.scrollTop / Math.max(1, pdfViewport.scrollHeight);
-    pdfZoom = Math.max(0.75, Math.min(2.5, Number((pdfZoom + change).toFixed(2))));
+    pdfZoom = Math.max(0.75, Math.min(4, Number((pdfZoom + change).toFixed(2))));
     updatePdfControls();
-    renderPdfDocument().then(() => {
-      if (pdfReader?.open) pdfViewport.scrollTop = scrollProgress * pdfViewport.scrollHeight;
-    });
+    renderPdfDocument();
   };
   pdfZoomOut?.addEventListener('click', () => changePdfZoom(-0.25));
   pdfZoomIn?.addEventListener('click', () => changePdfZoom(0.25));
+
+  const pdfPointerMidpoint = (first, second) => ({
+    x: (first.x + second.x) / 2,
+    y: (first.y + second.y) / 2
+  });
+  const pdfPointerDistance = (first, second) => Math.hypot(second.x - first.x, second.y - first.y);
+
+  pdfViewport?.addEventListener('pointerdown', (event) => {
+    if (!pdfReader?.open || !pdfDocument || !event.target.closest?.('.pdf-page-canvas, #pdf-pages')) return;
+    if (event.pointerType === 'touch') {
+      const point = { id: event.pointerId, x: event.clientX, y: event.clientY };
+      pdfTouchPointers.set(event.pointerId, point);
+      try { pdfViewport.setPointerCapture(event.pointerId); } catch {}
+      event.preventDefault();
+
+      if (pdfTouchPointers.size === 2) {
+        const [first, second] = [...pdfTouchPointers.values()];
+        const midpoint = pdfPointerMidpoint(first, second);
+        const pagesRect = pdfPages.getBoundingClientRect();
+        pdfPinch = {
+          ids: [first.id, second.id],
+          startDistance: Math.max(1, pdfPointerDistance(first, second)),
+          startZoom: pdfZoom,
+          pageLeft: pagesRect.left,
+          pageTop: pagesRect.top,
+          contentX: midpoint.x - pagesRect.left,
+          contentY: midpoint.y - pagesRect.top,
+          lastMidpoint: midpoint
+        };
+        pdfPanPointer = null;
+        pdfViewport.classList.remove('is-panning');
+      } else if (pdfTouchPointers.size === 1) {
+        pdfPanPointer = {
+          id: event.pointerId,
+          x: event.clientX,
+          y: event.clientY,
+          left: pdfViewport.scrollLeft,
+          top: pdfViewport.scrollTop,
+          pointerType: 'touch'
+        };
+        if (pdfZoom > 1.01) pdfViewport.classList.add('is-panning');
+      }
+      return;
+    }
+
+    if (pdfZoom <= 1.01 || !event.isPrimary || event.button !== 0) return;
+    pdfPanPointer = {
+      id: event.pointerId,
+      x: event.clientX,
+      y: event.clientY,
+      left: pdfViewport.scrollLeft,
+      top: pdfViewport.scrollTop,
+      pointerType: event.pointerType
+    };
+    pdfViewport.classList.add('is-panning');
+    pdfViewport.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  });
+  pdfViewport?.addEventListener('pointermove', (event) => {
+    if (event.pointerType === 'touch' && pdfTouchPointers.has(event.pointerId)) {
+      pdfTouchPointers.set(event.pointerId, { id: event.pointerId, x: event.clientX, y: event.clientY });
+      if (pdfPinch && pdfPinch.ids.every((id) => pdfTouchPointers.has(id))) {
+        const [first, second] = pdfPinch.ids.map((id) => pdfTouchPointers.get(id));
+        const midpoint = pdfPointerMidpoint(first, second);
+        pdfPinch.lastMidpoint = midpoint;
+        pdfZoom = Math.max(0.75, Math.min(4, pdfPinch.startZoom * pdfPointerDistance(first, second) / pdfPinch.startDistance));
+        updatePdfControls();
+        const scale = pdfZoom / pdfPinch.startZoom;
+        const translateX = midpoint.x - pdfPinch.pageLeft - pdfPinch.contentX * scale;
+        const translateY = midpoint.y - pdfPinch.pageTop - pdfPinch.contentY * scale;
+        pdfPages.style.transformOrigin = '0 0';
+        pdfPages.style.transform = `translate3d(${translateX}px, ${translateY}px, 0) scale(${scale})`;
+        event.preventDefault();
+        return;
+      }
+      if (pdfPanPointer?.pointerType === 'touch' && event.pointerId === pdfPanPointer.id) {
+        pdfViewport.scrollLeft = pdfPanPointer.left - (event.clientX - pdfPanPointer.x);
+        pdfViewport.scrollTop = pdfPanPointer.top - (event.clientY - pdfPanPointer.y);
+        event.preventDefault();
+      }
+      return;
+    }
+    if (!pdfPanPointer || event.pointerId !== pdfPanPointer.id) return;
+    pdfViewport.scrollLeft = pdfPanPointer.left - (event.clientX - pdfPanPointer.x);
+    pdfViewport.scrollTop = pdfPanPointer.top - (event.clientY - pdfPanPointer.y);
+    event.preventDefault();
+  });
+  const endPdfPan = (event) => {
+    if (event.pointerType === 'touch' && pdfTouchPointers.has(event.pointerId)) {
+      pdfTouchPointers.delete(event.pointerId);
+      if (pdfPinch && pdfPinch.ids.includes(event.pointerId)) {
+        const midpoint = pdfPinch.lastMidpoint;
+        const viewportRect = pdfViewport.getBoundingClientRect();
+        pdfPinch = null;
+        pdfPanPointer = null;
+        pdfViewport.classList.remove('is-panning');
+        renderPdfDocument({ anchorX: midpoint.x - viewportRect.left, anchorY: midpoint.y - viewportRect.top });
+      } else if (pdfPanPointer?.pointerType === 'touch' && event.pointerId === pdfPanPointer.id) {
+        pdfPanPointer = null;
+        pdfViewport.classList.remove('is-panning');
+      }
+      return;
+    }
+    if (!pdfPanPointer || event.pointerId !== pdfPanPointer.id) return;
+    pdfPanPointer = null;
+    pdfViewport?.classList.remove('is-panning');
+  };
+  pdfViewport?.addEventListener('pointerup', endPdfPan);
+  pdfViewport?.addEventListener('pointercancel', endPdfPan);
+  pdfViewport?.addEventListener('lostpointercapture', endPdfPan);
+
   window.addEventListener('resize', () => {
     if (!pdfReader?.open || !pdfDocument) return;
     clearTimeout(pdfResizeTimer);
