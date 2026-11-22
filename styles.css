@@ -809,6 +809,16 @@ h2 {
   overscroll-behavior: contain;
 }
 
+.pdf-reader-viewport.is-pannable {
+  cursor: grab;
+  touch-action: none;
+}
+
+.pdf-reader-viewport.is-panning {
+  cursor: grabbing;
+  user-select: none;
+}
+
 .pdf-reader-status {
   margin: 30px auto;
   color: #f5f0e6;

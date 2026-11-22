@@ -31,6 +31,7 @@
   let pdfZoom = 1;
   let pdfCurrentUrl = '';
   let pdfResizeTimer = 0;
+  let pdfPanPointer = null;
 
   const syncFullscreenButton = () => {
     const isFullscreen = Boolean(modal?.contains(document.fullscreenElement));
@@ -96,8 +97,12 @@
   const updatePdfControls = () => {
     const ready = Boolean(pdfDocument);
     pdfZoomOut.disabled = !ready || pdfZoom <= 0.75;
-    pdfZoomIn.disabled = !ready || pdfZoom >= 2.5;
+    pdfZoomIn.disabled = !ready || pdfZoom >= 4;
     pdfZoomLabel.textContent = `${Math.round(pdfZoom * 100)}%`;
+  };
+
+  const updatePdfPanState = () => {
+    pdfViewport?.classList.toggle('is-pannable', Boolean(pdfDocument && pdfZoom > 1.01));
   };
 
   const showPdfFallback = (url) => {
@@ -114,6 +119,13 @@
     if (!pdfDocument || !pdfReader.open || !pdfPages || !pdfViewport || !pdfStatus) return;
     const version = ++pdfRenderVersion;
     const doc = pdfDocument;
+    const hadRenderedPages = pdfPages.children.length > 0;
+    const previousX = hadRenderedPages
+      ? (pdfViewport.scrollLeft + pdfViewport.clientWidth / 2) / Math.max(1, pdfViewport.scrollWidth)
+      : 0;
+    const previousY = hadRenderedPages
+      ? (pdfViewport.scrollTop + pdfViewport.clientHeight / 2) / Math.max(1, pdfViewport.scrollHeight)
+      : 0;
     cancelPdfRenderTasks();
     pdfPages.replaceChildren();
     pdfPages.hidden = false;
@@ -122,7 +134,8 @@
     pdfStatus.hidden = false;
     pdfStatus.textContent = 'Rendering pages…';
     const availableWidth = Math.max(200, pdfViewport.clientWidth - 32);
-    const density = Math.min(window.devicePixelRatio || 1, 2);
+    // Render at 2 backing pixels per CSS pixel even on standard-density displays.
+    const density = 2;
 
     try {
       for (let pageNumber = 1; pageNumber <= doc.numPages; pageNumber += 1) {
@@ -150,6 +163,12 @@
       }
       pdfStatus.hidden = true;
       pdfRenderTasks = [];
+      updatePdfPanState();
+      requestAnimationFrame(() => {
+        if (version !== pdfRenderVersion || !pdfReader.open) return;
+        pdfViewport.scrollLeft = previousX * pdfViewport.scrollWidth - pdfViewport.clientWidth / 2;
+        pdfViewport.scrollTop = previousY * pdfViewport.scrollHeight - pdfViewport.clientHeight / 2;
+      });
     } catch (error) {
       if (error?.name === 'RenderingCancelledException' || version !== pdfRenderVersion) return;
       showPdfFallback(pdfCurrentUrl);
@@ -222,15 +241,41 @@
 
   const changePdfZoom = (change) => {
     if (!pdfDocument) return;
-    const scrollProgress = pdfViewport.scrollTop / Math.max(1, pdfViewport.scrollHeight);
-    pdfZoom = Math.max(0.75, Math.min(2.5, Number((pdfZoom + change).toFixed(2))));
+    pdfZoom = Math.max(0.75, Math.min(4, Number((pdfZoom + change).toFixed(2))));
     updatePdfControls();
-    renderPdfDocument().then(() => {
-      if (pdfReader?.open) pdfViewport.scrollTop = scrollProgress * pdfViewport.scrollHeight;
-    });
+    renderPdfDocument();
   };
   pdfZoomOut?.addEventListener('click', () => changePdfZoom(-0.25));
   pdfZoomIn?.addEventListener('click', () => changePdfZoom(0.25));
+
+  pdfViewport?.addEventListener('pointerdown', (event) => {
+    if (!pdfReader?.open || pdfZoom <= 1.01 || !event.isPrimary || event.button !== 0 || !event.target.closest?.('.pdf-page-canvas')) return;
+    pdfPanPointer = {
+      id: event.pointerId,
+      x: event.clientX,
+      y: event.clientY,
+      left: pdfViewport.scrollLeft,
+      top: pdfViewport.scrollTop
+    };
+    pdfViewport.classList.add('is-panning');
+    pdfViewport.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  });
+  pdfViewport?.addEventListener('pointermove', (event) => {
+    if (!pdfPanPointer || event.pointerId !== pdfPanPointer.id) return;
+    pdfViewport.scrollLeft = pdfPanPointer.left - (event.clientX - pdfPanPointer.x);
+    pdfViewport.scrollTop = pdfPanPointer.top - (event.clientY - pdfPanPointer.y);
+    event.preventDefault();
+  });
+  const endPdfPan = (event) => {
+    if (!pdfPanPointer || event.pointerId !== pdfPanPointer.id) return;
+    pdfPanPointer = null;
+    pdfViewport?.classList.remove('is-panning');
+  };
+  pdfViewport?.addEventListener('pointerup', endPdfPan);
+  pdfViewport?.addEventListener('pointercancel', endPdfPan);
+  pdfViewport?.addEventListener('lostpointercapture', endPdfPan);
+
   window.addEventListener('resize', () => {
     if (!pdfReader?.open || !pdfDocument) return;
     clearTimeout(pdfResizeTimer);
