@@ -471,6 +471,7 @@ h2 {
   font-size: clamp(22px, 3vw, 32px);
   line-height: 1.1;
   letter-spacing: -.04em;
+  color: #45d5d5;
   white-space: nowrap;
 }
 
@@ -1457,17 +1458,6 @@ html.has-js .will-reveal.is-visible {
 
   #work {
     padding-top: 60px;
-  }
-
-  #work .intro-kicker {
-    gap: 6px;
-    font-size: 9px;
-    letter-spacing: .06em;
-    white-space: nowrap;
-  }
-
-  #work .intro-kicker::before {
-    width: 14px;
   }
 
   .head {
