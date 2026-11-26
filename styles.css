@@ -1782,3 +1782,26 @@ html.has-js .will-reveal.is-visible {
     font-size: 8px;
   }
 }
+
+.portfolio-photo-watermark {
+  position: fixed;
+  z-index: -1;
+  top: clamp(70px, 9vh, 132px);
+  right: max(14px, calc((100vw - 1480px) / 2));
+  width: clamp(220px, 30vw, 420px);
+  aspect-ratio: 3 / 4;
+  background: url("./portfolio-portrait-cutout.png") center / contain no-repeat;
+  opacity: .085;
+  filter: grayscale(1) saturate(.7) contrast(.94);
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 42%, transparent 78%);
+  mask-image: radial-gradient(ellipse at center, #000 42%, transparent 78%);
+  pointer-events: none;
+}
+@media (max-width: 700px) {
+  .portfolio-photo-watermark {
+    top: 92px;
+    right: -18px;
+    width: clamp(170px, 52vw, 230px);
+    opacity: .055;
+  }
+}
