@@ -1794,11 +1794,16 @@ html.has-js .will-reveal.is-visible {
   }
 }
 
+main {
+  position: relative;
+  z-index: 1;
+}
+
 .portfolio-photo-watermark {
   position: fixed;
-  z-index: -1;
+  z-index: 0;
   top: clamp(70px, 9vh, 132px);
-  right: max(14px, calc((100vw - 1480px) / 2));
+  right: -176px;
   width: clamp(220px, 30vw, 420px);
   aspect-ratio: 3 / 4;
   background: url("./portfolio-portrait-cutout.png") center / contain no-repeat;
@@ -1811,7 +1816,7 @@ html.has-js .will-reveal.is-visible {
 @media (max-width: 700px) {
   .portfolio-photo-watermark {
     top: 92px;
-    right: -18px;
+    right: -118px;
     width: clamp(170px, 52vw, 230px);
     opacity: .055;
   }
