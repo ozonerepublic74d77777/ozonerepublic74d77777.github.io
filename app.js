@@ -34,6 +34,32 @@
   let pdfPanPointer = null;
   const pdfTouchPointers = new Map();
   let pdfPinch = null;
+  const videoModalInner = modal?.querySelector('.video-modal-inner');
+  const videoLinks = [...document.querySelectorAll('.portfolio-grid .shot[data-drive-id]')];
+  const videoVisibility = new Map(videoLinks.map((link) => [link, 0]));
+  let activeVideoLink = null;
+
+  const clearInlineVideoSizing = () => {
+    ['position', 'top', 'left', 'right', 'bottom', 'width', 'height', 'transform', 'transform-origin'].forEach((property) => {
+      frame?.style.removeProperty(property);
+    });
+  };
+
+  const sizeInlineVideo = (link) => {
+    if (!frame || !link) return;
+    const { width, height } = link.getBoundingClientRect();
+    if (!width || !height) return;
+    const scaleUp = Math.max(1, 400 / width, 400 / height);
+    frame.style.position = 'absolute';
+    frame.style.left = '50%';
+    frame.style.top = '50%';
+    frame.style.right = 'auto';
+    frame.style.bottom = 'auto';
+    frame.style.width = `${Math.ceil(width * scaleUp)}px`;
+    frame.style.height = `${Math.ceil(height * scaleUp)}px`;
+    frame.style.transform = `translate(-50%, -50%) scale(${1 / scaleUp})`;
+    frame.style.transformOrigin = 'center';
+  };
 
   const syncFullscreenButton = () => {
     const isFullscreen = Boolean(modal?.contains(document.fullscreenElement));
@@ -61,6 +87,42 @@
     }
   };
 
+  const mountVideo = (link, container) => {
+    if (!frame || !link || !container) return;
+    const id = link.dataset.driveId;
+    if (!id) return;
+
+    activeVideoLink = link;
+    frame.setAttribute('allow', 'autoplay; encrypted-media; fullscreen; picture-in-picture');
+    frame.allowFullscreen = true;
+    frame.title = `Portfolio video: ${link.closest('.card')?.querySelector('.info h3')?.textContent.trim() || link.querySelector('img')?.alt || 'video preview'}`;
+    if (container === link) {
+      frame.tabIndex = -1;
+      frame.setAttribute('aria-hidden', 'true');
+      sizeInlineVideo(link);
+    } else {
+      frame.removeAttribute('tabindex');
+      frame.removeAttribute('aria-hidden');
+      clearInlineVideoSizing();
+    }
+
+    const needsLoad = frame.dataset.driveId !== id;
+    if (frame.parentElement !== container) container.appendChild(frame);
+    if (needsLoad) {
+      frame.removeAttribute('src');
+      frame.dataset.driveId = id;
+      frame.src = `https://drive.google.com/file/d/${encodeURIComponent(id)}/preview?autoplay=1`;
+    }
+  };
+
+  const stopCardPlayback = () => {
+    if (!frame || modal?.classList.contains('open')) return;
+    frame.removeAttribute('src');
+    delete frame.dataset.driveId;
+    frame.remove();
+    activeVideoLink = null;
+  };
+
   const closeVideo = ({ restoreFocus = true } = {}) => {
     if (!modal || !frame || !modal.classList.contains('open')) return;
 
@@ -69,7 +131,8 @@
     }
     modal.classList.remove('open');
     modal.setAttribute('aria-hidden', 'true');
-    frame.removeAttribute('src');
+    if (activeVideoLink?.isConnected) mountVideo(activeVideoLink, activeVideoLink);
+    else stopCardPlayback();
     document.body.style.overflow = '';
 
     if (restoreFocus && returnFocusTo instanceof HTMLElement) {
@@ -79,10 +142,10 @@
   };
 
   const openVideo = (link) => {
-    if (!modal || !frame || !closeButton) return;
+    if (!modal || !frame || !closeButton || !videoModalInner) return;
 
     returnFocusTo = link;
-    frame.src = `https://drive.google.com/file/d/${encodeURIComponent(link.dataset.driveId)}/preview?autoplay=1`;
+    mountVideo(link, videoModalInner);
     modal.classList.add('open');
     modal.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
@@ -450,6 +513,32 @@
     scrollFrame = window.requestAnimationFrame(updateHeader);
   }, { passive: true });
   updateHeader();
+
+  const selectVisibleVideo = () => {
+    if (modal?.classList.contains('open')) return;
+    const mostVisible = videoLinks
+      .map((link) => ({ link, ratio: videoVisibility.get(link) || 0 }))
+      .reduce((best, current) => current.ratio > best.ratio ? current : best, { link: null, ratio: 0 });
+    if (!mostVisible.link || mostVisible.ratio < 0.45) {
+      if (activeVideoLink) stopCardPlayback();
+      return;
+    }
+    if (mostVisible.link !== activeVideoLink) mountVideo(mostVisible.link, mostVisible.link);
+  };
+
+  if (frame && videoModalInner && videoLinks.length && 'IntersectionObserver' in window) {
+    const videoObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => videoVisibility.set(entry.target, entry.isIntersecting ? entry.intersectionRatio : 0));
+      selectVisibleVideo();
+    }, { threshold: [0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9, 1], rootMargin: '-8% 0px -8% 0px' });
+    videoLinks.forEach((link) => videoObserver.observe(link));
+  }
+
+  window.addEventListener('resize', () => {
+    if (activeVideoLink && frame?.parentElement === activeVideoLink && !modal?.classList.contains('open')) {
+      sizeInlineVideo(activeVideoLink);
+    }
+  });
 
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const revealTargets = [...document.querySelectorAll('.card, .work-step, .answers-video-card')];
