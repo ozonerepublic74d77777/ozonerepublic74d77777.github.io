@@ -1459,6 +1459,17 @@ html.has-js .will-reveal.is-visible {
     padding-top: 60px;
   }
 
+  #work .intro-kicker {
+    gap: 6px;
+    font-size: 9px;
+    letter-spacing: .06em;
+    white-space: nowrap;
+  }
+
+  #work .intro-kicker::before {
+    width: 14px;
+  }
+
   .head {
     display: block;
     margin-bottom: 19px;
