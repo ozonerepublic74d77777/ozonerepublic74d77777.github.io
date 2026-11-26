@@ -459,7 +459,7 @@ h2 {
 
 /* Select work — flat video gallery */
 #work {
-  padding-top: 38px;
+  padding-top: 60px;
 }
 
 #work .head {
@@ -1456,7 +1456,7 @@ html.has-js .will-reveal.is-visible {
   }
 
   #work {
-    padding-top: 30px;
+    padding-top: 60px;
   }
 
   .head {
