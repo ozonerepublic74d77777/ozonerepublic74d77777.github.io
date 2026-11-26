@@ -1812,3 +1812,62 @@ main {
     opacity: .055;
   }
 }
+
+
+/* Retained copy is ordinary text, not a visual heading hierarchy. */
+.intro-heading {
+  max-width: 720px;
+  margin: 0 auto;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.7;
+  text-wrap: balance;
+}
+
+.intro-heading > span {
+  color: inherit;
+}
+
+.portfolio-grid .info .card-title {
+  margin: 7px 0 5px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.65;
+}
+
+.non-heading-title {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.7;
+}
+
+.how-work .head .non-heading-title {
+  margin: 0;
+}
+
+.pdf-reader-heading .pdf-reader-title {
+  margin: 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.45;
+  text-overflow: ellipsis;
+}
+
+.project-cta .non-heading-title {
+  margin: 0 0 18px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.7;
+}
