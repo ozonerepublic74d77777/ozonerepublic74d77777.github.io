@@ -493,6 +493,10 @@ h2 {
   transition: border-color .3s ease, box-shadow .3s ease;
 }
 
+.portfolio-grid .card.square-video .shot {
+  aspect-ratio: 1 / 1;
+}
+
 .shot:hover,
 .shot:focus-visible {
   border-color: #ff7626a6;
