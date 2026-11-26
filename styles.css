@@ -440,7 +440,8 @@ summary:focus-visible {
   margin-bottom: 25px;
 }
 
-h2 {
+h2,
+.non-heading-title {
   margin: 10px 0 0;
   color: var(--text);
   font-size: clamp(38px, 6vw, 64px);
@@ -578,7 +579,7 @@ h2 {
   font-size: 9px;
 }
 
-.info h3 {
+.info .card-title {
   margin: 7px 0 5px;
   color: var(--text);
   font-size: clamp(18px, 2vw, 24px);
@@ -739,7 +740,7 @@ h2 {
   letter-spacing: .16em;
 }
 
-.pdf-reader-heading h2 {
+.pdf-reader-heading .pdf-reader-title {
   margin: 0;
   overflow: hidden;
   color: #f5f0e6;
@@ -955,7 +956,7 @@ h2 {
   margin-bottom: 19px;
 }
 
-.how-work .head h2 {
+.how-work .head .non-heading-title {
   margin-top: 8px;
 }
 
@@ -1177,13 +1178,13 @@ h2 {
   margin-inline: auto;
 }
 
-.project-cta h2 {
+.project-cta .non-heading-title {
   margin: 14px 0 18px;
   font-size: clamp(42px, 7vw, 78px);
   line-height: .98;
 }
 
-.project-cta h2 span {
+.project-cta .non-heading-title span {
   color: var(--accent);
 }
 
@@ -1479,7 +1480,7 @@ html.has-js .will-reveal.is-visible {
     gap: 18px 12px;
   }
 
-  .portfolio-grid .info h3 {
+  .portfolio-grid .info .card-title {
     font-size: 19px;
   }
 
@@ -1526,7 +1527,7 @@ html.has-js .will-reveal.is-visible {
     padding: 74px 20px;
   }
 
-  .project-cta h2 {
+  .project-cta .non-heading-title {
     font-size: clamp(40px, 12vw, 62px);
   }
 
@@ -1583,7 +1584,7 @@ html.has-js .will-reveal.is-visible {
     grid-template-columns: 1fr;
   }
 
-  .portfolio-grid .info h3 {
+  .portfolio-grid .info .card-title {
     font-size: 21px;
   }
 
@@ -1697,7 +1698,7 @@ html.has-js .will-reveal.is-visible {
     letter-spacing: .08em;
   }
 
-  .portfolio-grid .info h3 {
+  .portfolio-grid .info .card-title {
     font-size: clamp(12px, 3vw, 15px);
     line-height: 1.12;
   }
