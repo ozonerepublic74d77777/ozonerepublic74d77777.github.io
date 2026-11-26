@@ -35,9 +35,15 @@
   const pdfTouchPointers = new Map();
   let pdfPinch = null;
   const videoModalInner = modal?.querySelector('.video-modal-inner');
-  const videoLinks = [...document.querySelectorAll('.portfolio-grid .shot[data-drive-id]')];
+  const autoplayDriveIds = new Set([
+    '1vohawd993ZlIki3L_fiTOm51hii_xUgi',
+    '13St_mh7zPXuKfpGUFR9MuVru3JUCpy8x'
+  ]);
+  const videoLinks = [...document.querySelectorAll('.portfolio-grid .shot[data-drive-id]')]
+    .filter((link) => autoplayDriveIds.has(link.dataset.driveId));
   const videoVisibility = new Map(videoLinks.map((link) => [link, 0]));
   let activeVideoLink = null;
+  let hasUserScrolled = false;
 
   const clearInlineVideoSizing = () => {
     ['position', 'top', 'left', 'right', 'bottom', 'width', 'height', 'transform', 'transform-origin'].forEach((property) => {
@@ -49,7 +55,8 @@
     if (!frame || !link) return;
     const { width, height } = link.getBoundingClientRect();
     if (!width || !height) return;
-    const scaleUp = Math.max(1, 400 / width, 400 / height);
+    const minimumViewport = 520;
+    const scaleUp = Math.max(1, minimumViewport / width, minimumViewport / height);
     frame.style.position = 'absolute';
     frame.style.left = '50%';
     frame.style.top = '50%';
@@ -131,8 +138,12 @@
     }
     modal.classList.remove('open');
     modal.setAttribute('aria-hidden', 'true');
-    if (activeVideoLink?.isConnected) mountVideo(activeVideoLink, activeVideoLink);
-    else stopCardPlayback();
+    if (activeVideoLink?.isConnected && videoLinks.includes(activeVideoLink)) {
+      mountVideo(activeVideoLink, activeVideoLink);
+    } else {
+      stopCardPlayback();
+      requestAnimationFrame(selectVisibleVideo);
+    }
     document.body.style.overflow = '';
 
     if (restoreFocus && returnFocusTo instanceof HTMLElement) {
@@ -515,7 +526,7 @@
   updateHeader();
 
   const selectVisibleVideo = () => {
-    if (modal?.classList.contains('open')) return;
+    if (modal?.classList.contains('open') || !hasUserScrolled) return;
     const mostVisible = videoLinks
       .map((link) => ({ link, ratio: videoVisibility.get(link) || 0 }))
       .reduce((best, current) => current.ratio > best.ratio ? current : best, { link: null, ratio: 0 });
@@ -525,6 +536,19 @@
     }
     if (mostVisible.link !== activeVideoLink) mountVideo(mostVisible.link, mostVisible.link);
   };
+
+  const enableAutoplayAfterScrollInput = () => {
+    if (hasUserScrolled) return;
+    hasUserScrolled = true;
+    selectVisibleVideo();
+  };
+  window.addEventListener('wheel', enableAutoplayAfterScrollInput, { passive: true });
+  window.addEventListener('touchmove', enableAutoplayAfterScrollInput, { passive: true });
+  window.addEventListener('keydown', (event) => {
+    if (!['ArrowDown', 'PageDown', 'End', ' '].includes(event.key)) return;
+    if (event.target instanceof HTMLElement && event.target.closest('a, button, input, textarea, select, [contenteditable="true"]')) return;
+    enableAutoplayAfterScrollInput();
+  });
 
   if (frame && videoModalInner && videoLinks.length && 'IntersectionObserver' in window) {
     const videoObserver = new IntersectionObserver((entries) => {
